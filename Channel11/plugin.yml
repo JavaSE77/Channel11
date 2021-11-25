@@ -3,4 +3,5 @@ name: Channel_11
 description: Channel 11 news
 author: JavaSE
 version: 1.0.0
+api-version: 1.17
 commands:
