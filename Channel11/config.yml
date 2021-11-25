@@ -1,0 +1,6 @@
+msg: '[Channel 11 news] %announcer% presenting for channel 11 news. %player% was found dead. Police have ruled it a homicide. Police have identified %killer% as a suspect'
+msgNoKiller: '[Channel 11 news] %announcer% presenting for channel 11 news. %player% was found dead. Police have ruled it a suicide'
+msgKilledByCustom: '[Channel 11 news] %announcer% presenting for channel 11 news. %player% was found dead. They appear to have been killed by %item%. Police have ruled it a homicide. Police have identified %killer% as a suspect. '
+announcers: 
+  - 'test A 1'
+  - 'test b 2'
