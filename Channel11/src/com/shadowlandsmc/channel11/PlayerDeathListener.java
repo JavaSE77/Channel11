@@ -19,6 +19,7 @@ public class PlayerDeathListener implements Listener {
   @SuppressWarnings("unchecked")
   public List<String> announcer = (List<String>) plugin.getConfig().getList("announcers");
   
+
   
   @EventHandler
   public void onPlayerDeathEvent(PlayerDeathEvent event){
@@ -28,13 +29,20 @@ public class PlayerDeathListener implements Listener {
 	  if(event.getDeathMessage() == null) {
 		  return;
 	  }
-    //remove default death message
-    event.setDeathMessage(null);
+
+	  
+	  //log the default death message
+	  plugin.getLogger().info("Default death message: " + event.getDeathMessage());
+	  
+	  //remove the message so other plugins don't use it
+	  event.setDeathMessage(null);
+  
     
     if(event.getEntity().getKiller() != null) {
     	
         //killed by custom item
         if(event.getEntity().getKiller().getInventory().getItemInMainHand() != null 
+        		&& event.getEntity().getKiller().getInventory().getItemInMainHand().hasItemMeta()
         		&& event.getEntity().getKiller().getInventory().getItemInMainHand().getItemMeta().getDisplayName() != "") {
           String msg = plugin.getConfig().getString("msgKilledByCustom");
           //The way we are replacing color codes is bad practice, and may not work in future updates
@@ -90,8 +98,6 @@ public class PlayerDeathListener implements Listener {
     	            replaceAll("%player%", event.getEntity().getDisplayName()));
     	    
     }
-
-    
   }
   
 

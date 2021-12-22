@@ -18,6 +18,8 @@ public class Main extends JavaPlugin {
     
       getConfig().options().copyDefaults(true); 
       saveDefaultConfig();
+      
+
     
     /*
      * Register a command to the list of usable commands. If you don't register the
