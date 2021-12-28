@@ -8,6 +8,7 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
@@ -25,11 +26,13 @@ public class PlayerDeathListener implements Listener {
   
 
   
-  @EventHandler
+  @EventHandler(priority = EventPriority.HIGHEST)
   public void onPlayerDeathEvent(PlayerDeathEvent event){
       
+	  plugin.getLogger().severe(event.getDeathMessage());
+	  
 	  //If the message has already been set by another plugin, ignore
-	  if(event.getDeathMessage() == null) {
+	  if(event.getDeathMessage() == null || event.getDeathMessage().isEmpty()) {
 		  return;
 	  }
 
