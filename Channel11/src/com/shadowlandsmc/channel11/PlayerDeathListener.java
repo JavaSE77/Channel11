@@ -3,6 +3,10 @@ package com.shadowlandsmc.channel11;
 import java.util.List;
 import java.util.Random;
 
+import org.bukkit.Material;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -23,44 +27,34 @@ public class PlayerDeathListener implements Listener {
   
   @EventHandler
   public void onPlayerDeathEvent(PlayerDeathEvent event){
-    
-	  
+      
 	  //If the message has already been set by another plugin, ignore
 	  if(event.getDeathMessage() == null) {
 		  return;
 	  }
 
-	  
 	  //log the default death message
 	  plugin.getLogger().info("Default death message: " + event.getDeathMessage());
 	  
 	  //remove the message so other plugins don't use it
 	  event.setDeathMessage(null);
-  
-    
+
     if(event.getEntity().getKiller() != null) {
     	
         //killed by custom item
         if(event.getEntity().getKiller().getInventory().getItemInMainHand() != null 
         		&& event.getEntity().getKiller().getInventory().getItemInMainHand().hasItemMeta()
         		&& event.getEntity().getKiller().getInventory().getItemInMainHand().getItemMeta().getDisplayName() != "") {
-          String msg = plugin.getConfig().getString("msgKilledByCustom");
-          //The way we are replacing color codes is bad practice, and may not work in future updates
-          plugin.getServer().broadcastMessage(msg.replaceAll("&", "§").replaceAll("%announcer%", getAnnoucer()).
-              replaceAll("%player%", event.getEntity().getDisplayName()).replaceAll("%item%", event.getEntity()
-                  .getKiller().getInventory().getItemInMainHand().getItemMeta().getDisplayName()).replaceAll("%killer%", 
-                      event.getEntity().getKiller().getName()));
-          return;
-          
+
+        	killedByCustom(event.getEntity().getDisplayName(), event.getEntity().getKiller().getName(), event.getEntity()
+                    .getKiller().getInventory().getItemInMainHand().getItemMeta().getDisplayName());
+          return;    
           //killed by entity, no custom
         } else {
           if(event.getEntity().getKiller().getName() != null) {
-            String msg = plugin.getConfig().getString("msg");
-            //The way we are replacing color codes is bad practice, and may not work in future updates
-            plugin.getServer().broadcastMessage(msg.replaceAll("&", "§").replaceAll("%announcer%", getAnnoucer()).
-                replaceAll("%player%", event.getEntity().getDisplayName()).replaceAll("%killer%", event.getEntity().getKiller().getName()));
-            return;
-            
+
+        	  killedByEntityNoCustom(event.getEntity().getDisplayName(), event.getEntity().getKiller().getName());
+            return;         
           }
         }
     } else {
@@ -74,28 +68,79 @@ public class PlayerDeathListener implements Listener {
     	      //check if the mob has a custom name
     	      if(entityDamageCause.getDamager().getCustomName() != null) {
     	    	     
-                  String msg = plugin.getConfig().getString("msgMobWithName");
-                  //The way we are replacing color codes is bad practice, and may not work in future updates
-                  plugin.getServer().broadcastMessage(msg.replaceAll("&", "§").replaceAll("%announcer%", getAnnoucer()).
-                      replaceAll("%player%", event.getEntity().getDisplayName()).replaceAll("%killer%", entityDamageCause.getDamager().getCustomName()));
+    	    	  mobWithCustomName(event.getEntity().getDisplayName(), entityDamageCause.getDamager().getCustomName());
         	      return;
     	      } else {
     	     
-              String msg = plugin.getConfig().getString("msgMobWithoutName");
-              //The way we are replacing color codes is bad practice, and may not work in future updates
-              plugin.getServer().broadcastMessage(msg.replaceAll("&", "§").replaceAll("%announcer%", getAnnoucer()).
-                  replaceAll("%player%", event.getEntity().getDisplayName()).replaceAll("%killer%", entityDamageCause.getDamager().getType().toString().toLowerCase()));
+    	    	  //an arrow is an instance of a mob without name
+    	    	  
+    	    	  if(entityDamageCause.getDamager() instanceof Projectile) {
+    	    		  
+    	    		  Projectile projectile = (Projectile) entityDamageCause.getDamager();
+    	    		  
+    	    		  if(projectile.getShooter() != null) {
+    	    			  
+    	    			  if(projectile.getShooter() instanceof Player) {
+    	    				  
+    	    				  Player killer = (Player) projectile.getShooter();
+    	    				  
+    	    			        //killed by custom item. Check if it is in main hand
+    	    			        if(killer.getInventory().getItemInMainHand() != null 
+    	    			        		&& (killer.getInventory().getItemInMainHand().getType() == Material.BOW || killer.getInventory().getItemInMainHand().getType() == Material.CROSSBOW)
+    	    			        		&& killer.getInventory().getItemInMainHand().hasItemMeta()
+    	    			        		&& killer.getInventory().getItemInMainHand().getItemMeta().getDisplayName() != "") {
+    	    			          killedByCustom(event.getEntity().getDisplayName(), killer.getDisplayName(), killer.getInventory().getItemInMainHand().getItemMeta().getDisplayName());
+    	    			          return;
+    	    			          
+    	    			          //killed by entity, no custom
+    	    			        } else  if(killer.getInventory().getItemInOffHand() != null 
+    	    			        		&& (killer.getInventory().getItemInOffHand().getType() == Material.BOW || killer.getInventory().getItemInOffHand().getType() == Material.CROSSBOW)
+    	    			        		&& killer.getInventory().getItemInOffHand().hasItemMeta()
+    	    			        		&& killer.getInventory().getItemInOffHand().getItemMeta().getDisplayName() != "") {
+      	    			          killedByCustom(event.getEntity().getDisplayName(), killer.getDisplayName(), killer.getInventory().getItemInOffHand().getItemMeta().getDisplayName());
+      	    			          return;	
+    	    			        	
+    	    			        }
+    	    			        	else {
+    	    			        
+    	    			          if(event.getEntity().getKiller().getDisplayName() != null) {
+    	    			        	  killedByEntityNoCustom(event.getEntity().getDisplayName(), killer.getDisplayName());
+    	    			            return;
+    	    			            
+    	    			          }
+    	    			        }
+    	    				  
+    	    			  } else {
+    	    				  
+    	    				  if(projectile.getShooter() instanceof Entity) {
+    	    					  Entity killer = (Entity) projectile.getShooter();
+    	    					  
+    	    					  mobWithoutName(event.getEntity().getDisplayName(), killer.getType().toString().toLowerCase().replaceAll("_", " "));
+    	    					  return;
+    	    					  
+    	    				  }
+    	    				  
+    	    			  }
+    	    			  
+    	    			  
+    	    			  
+    	    		  } else {
+    	    			  
+    	    			  //if we don't know who shot the arrow
+    	    			  mobWithoutName(event.getEntity().getDisplayName(), "unknown projectile");
+    	    	    	      return;  
+    	    			  
+    	    		  }    		  
+    	    	  } else {  	    	
+    	    		  mobWithoutName(event.getEntity().getDisplayName(), entityDamageCause.getDamager().getType().toString().toLowerCase().replaceAll("_", " "));
     	      return;
+    	    	  }
     	      }
     	    }
     	  }   
     	  
-    	  
     	  //not killed by entity
-    	        String msg = plugin.getConfig().getString("msgNoKiller");
-    	        //The way we are replacing color codes is bad practice, and may not work in future updates
-    	        plugin.getServer().broadcastMessage(msg.replaceAll("&", "§").replaceAll("%announcer%", getAnnoucer()).
-    	            replaceAll("%player%", event.getEntity().getDisplayName()));
+    	  noKiller(event.getEntity().getDisplayName());
     	    
     }
   }
@@ -116,6 +161,44 @@ public class PlayerDeathListener implements Listener {
     }
     
     return "generic announcer";
+  }
+  
+  public void noKiller(String player) {
+	  
+	  //not killed by entity
+	        String msg = plugin.getConfig().getString("msgNoKiller");
+	        //The way we are replacing color codes is bad practice, and may not work in future updates
+	        plugin.getServer().broadcastMessage(msg.replaceAll("&", "§").replaceAll("%announcer%", getAnnoucer()).
+	            replaceAll("%player%", player));
+  }
+  
+  public void mobWithoutName(String player, String killer) {
+      String msg = plugin.getConfig().getString("msgMobWithoutName");
+      //The way we are replacing color codes is bad practice, and may not work in future updates
+      plugin.getServer().broadcastMessage(msg.replaceAll("&", "§").replaceAll("%announcer%", getAnnoucer()).
+          replaceAll("%player%", player).replaceAll("%killer%", killer));
+  }
+  
+  public void mobWithCustomName(String player, String killer) {
+      String msg = plugin.getConfig().getString("msgMobWithName");
+      //The way we are replacing color codes is bad practice, and may not work in future updates
+      plugin.getServer().broadcastMessage(msg.replaceAll("&", "§").replaceAll("%announcer%", getAnnoucer()).
+          replaceAll("%player%", player).replaceAll("%killer%", killer));
+  }
+  
+  public void killedByCustom(String player, String killer, String item) {
+      String msg = plugin.getConfig().getString("msgKilledByCustom");
+      //The way we are replacing color codes is bad practice, and may not work in future updates
+      plugin.getServer().broadcastMessage(msg.replaceAll("&", "§").replaceAll("%announcer%", getAnnoucer()).
+          replaceAll("%player%", player).replaceAll("%item%", item).replaceAll("%killer%", 
+                  killer));
+  }
+  
+  public void killedByEntityNoCustom(String player, String killer) {
+      String msg = plugin.getConfig().getString("msg");
+      //The way we are replacing color codes is bad practice, and may not work in future updates
+      plugin.getServer().broadcastMessage(msg.replaceAll("&", "§").replaceAll("%announcer%", getAnnoucer()).
+          replaceAll("%player%", player).replaceAll("%killer%", killer));
   }
   
 }
