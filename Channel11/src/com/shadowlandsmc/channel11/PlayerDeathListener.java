@@ -28,7 +28,8 @@ public class PlayerDeathListener implements Listener {
   
   @EventHandler(priority = EventPriority.HIGHEST)
   public void onPlayerDeathEvent(PlayerDeathEvent event){
-      
+	  
+	  plugin.getLogger().severe("Player " + event.getEntity().getDisplayName() + " died at: " + event.getEntity().getLocation().toString());      
 	  plugin.getLogger().severe(event.getDeathMessage());
 	  
 	  //If the message has already been set by another plugin, ignore
@@ -36,8 +37,6 @@ public class PlayerDeathListener implements Listener {
 		  return;
 	  }
 
-	  //log the default death message
-	  plugin.getLogger().info("Default death message: " + event.getDeathMessage());
 	  
 	  //remove the message so other plugins don't use it
 	  event.setDeathMessage(null);
